@@ -76,7 +76,7 @@ public class ListOfArticlesFragment extends Fragment {
                 NewAdapter newAdapter = new NewAdapter(CommonUsage.getAllNewArticle());
                 recyclerView.setAdapter(newAdapter);
 
-                Toast.makeText(getActivity(), "Fragment article response received", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getActivity(), "Fragment article response received", Toast.LENGTH_SHORT).show();
             }
 
             @Override

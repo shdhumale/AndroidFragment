@@ -11,8 +11,10 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
+import java.text.ParseException;
 import java.util.List;
 
+import siddhu.test.com.myfregment.Util.Util;
 import siddhu.test.com.myfregment.objects.Article;
 
 /*
@@ -65,6 +67,11 @@ public class NewAdapter extends RecyclerView.Adapter<NewAdapter.NewsViewHolder> 
             return;
         Article currentNewsObject = newsItems.get(position);
         holder.title.setText(currentNewsObject.getTitle());
+        /*try {
+            holder.date.setText(Util.getDate(currentNewsObject.getPublishedAt()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }*/
         holder.date.setText(currentNewsObject.getPublishedAt());
         holder.desc.setText(currentNewsObject.getDescription());
         holder.cardView.setOnClickListener(new View.OnClickListener() {

@@ -1,13 +1,17 @@
 package siddhu.test.com.myfregment;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.SharedPreferencesCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -41,8 +45,35 @@ public class SwipeHomeActivity extends AppCompatActivity {
             public void onResponse(Call<NewsApiSourcesResponse> call, Response<NewsApiSourcesResponse> response) {
                 List<Source> allSource = response.body().getSources();
                 CommonUsage.setAllNewSource(allSource);
-                ViewPagerAdapter viewPageAdapter = new ViewPagerAdapter(getSupportFragmentManager(),allSource);
+                viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                    @Override
+                    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                        //Log.i(TAG, "PageScroller" + position);
+                        System.out.println("PageScroller : " + position);
+                    }
+
+                    @Override
+                    public void onPageSelected(int position) {
+                        //Log.i(TAG, "PageSelected" + position);
+                        saveInPreference(position);
+                        System.out.println("PageSelected : " + position);
+                    }
+
+                    @Override
+                    public void onPageScrollStateChanged(int state) {
+                        //Log.i(TAG, "PageScrollStateChanged" + position);
+                        System.out.println("PageScrollStateChanged : "+state);
+                    }
+                });
+                ViewPagerAdapter viewPageAdapter = new ViewPagerAdapter(getSupportFragmentManager(), allSource);
                 viewPager.setAdapter(viewPageAdapter);
+                SharedPreferences sharedPreference = PreferenceManager.getDefaultSharedPreferences(SwipeHomeActivity.this);
+                int position = sharedPreference.getInt(KEY_POSITION, DEFAULT_POSITION);
+                if (position != 0)
+                {
+                    viewPager.setCurrentItem(position);
+                }
+
                 //Toast.makeText(SwipeHomeActivity.this, "Success Call", Toast.LENGTH_SHORT).show();
             }
 
@@ -51,6 +82,17 @@ public class SwipeHomeActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    public static final String KEY_POSITION = "storedposition";
+    public static final int DEFAULT_POSITION = 0;
+
+    public void saveInPreference(int position)
+    {
+        SharedPreferences sharePreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharePreferences.edit();
+        editor.putInt(KEY_POSITION, position);
+        editor.commit();
     }
 
     public class ViewPagerAdapter extends FragmentStatePagerAdapter
