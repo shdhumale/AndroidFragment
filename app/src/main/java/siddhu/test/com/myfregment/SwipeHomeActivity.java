@@ -70,6 +70,11 @@ public class SwipeHomeActivity extends AppCompatActivity {
         public int getCount() {
             return sources.size();
         }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return sources.get(position).getName();
+        }
     }
 
 
