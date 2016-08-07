@@ -1,6 +1,7 @@
 package siddhu.test.com.myfregment;
 
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.List;
 
 import retrofit2.Call;
@@ -39,7 +41,11 @@ public class SwipeHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_swipe_home);
         viewPager = (ViewPager) findViewById(R.id.activity_swipe_view_pager);
-        Call<NewsApiSourcesResponse> responseCall = NewsAPI.getNewsAPI().getSources();
+        MyAsyncTask myAsyncTask =  new MyAsyncTask();
+        myAsyncTask.execute();
+
+
+  /*      Call<NewsApiSourcesResponse> responseCall = NewsAPI.getNewsAPI().getSources();
         responseCall.enqueue(new Callback<NewsApiSourcesResponse>() {
             @Override
             public void onResponse(Call<NewsApiSourcesResponse> call, Response<NewsApiSourcesResponse> response) {
@@ -81,8 +87,59 @@ public class SwipeHomeActivity extends AppCompatActivity {
             public void onFailure(Call<NewsApiSourcesResponse> call, Throwable t) {
 
             }
-        });
+        });*/
     }
+
+    class MyAsyncTask extends AsyncTask<Void, Void, NewsApiSourcesResponse>{
+
+        @Override
+        protected NewsApiSourcesResponse doInBackground(Void... voids) {
+            Call<NewsApiSourcesResponse> responseCall = NewsAPI.getNewsAPI().getSources();
+            Response<NewsApiSourcesResponse> response = null;
+            try {
+                response = responseCall.execute();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return response.body();
+        }
+
+        @Override
+        protected void onPostExecute(NewsApiSourcesResponse newsApiSourcesResponse) {
+            super.onPostExecute(newsApiSourcesResponse);
+            List<Source> allSource = newsApiSourcesResponse.getSources();
+            CommonUsage.setAllNewSource(allSource);
+            viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                    //Log.i(TAG, "PageScroller" + position);
+                    System.out.println("PageScroller : " + position);
+                }
+
+                @Override
+                public void onPageSelected(int position) {
+                    //Log.i(TAG, "PageSelected" + position);
+                    saveInPreference(position);
+                    System.out.println("PageSelected : " + position);
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int state) {
+                    //Log.i(TAG, "PageScrollStateChanged" + position);
+                    System.out.println("PageScrollStateChanged : "+state);
+                }
+            });
+            ViewPagerAdapter viewPageAdapter = new ViewPagerAdapter(getSupportFragmentManager(), allSource);
+            viewPager.setAdapter(viewPageAdapter);
+            SharedPreferences sharedPreference = PreferenceManager.getDefaultSharedPreferences(SwipeHomeActivity.this);
+            int position = sharedPreference.getInt(KEY_POSITION, DEFAULT_POSITION);
+            if (position != 0)
+            {
+                viewPager.setCurrentItem(position);
+            }
+        }
+    }
+
 
     public static final String KEY_POSITION = "storedposition";
     public static final int DEFAULT_POSITION = 0;
